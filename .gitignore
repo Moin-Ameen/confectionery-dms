@@ -1,0 +1,18 @@
+# backend
+node_modules/
+.env
+*.log
+
+# flutter app
+app/.dart_tool/
+app/.packages
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/android/.gradle/
+app/android/local.properties
+app/android/key.properties
+*.jks
+*.iml
+.idea/
+.DS_Store

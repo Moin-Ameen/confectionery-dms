@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: confectionery-dms-api
+    runtime: node
+    rootDir: backend
+    plan: starter
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Asia/Karachi
+      - key: DB_NAME
+        value: confectionery_dms
+      - key: MONGODB_URI
+        sync: false
+      - key: API_TOKEN
+        generateValue: true
