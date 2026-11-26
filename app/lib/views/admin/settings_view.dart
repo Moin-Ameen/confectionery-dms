@@ -13,6 +13,8 @@ import '../../services/bt_printer_service.dart';
 import '../../services/settings_service.dart';
 import '../shell/shell_page.dart';
 import '../widgets/common.dart';
+import '../widgets/update_sheet.dart';
+import '../../controllers/update_controller.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -207,8 +209,29 @@ class _SettingsViewState extends State<SettingsView> {
             ]),
           ),
         ],
+        // ---- App update ----
+        const SectionTitle('App version'),
+        Builder(builder: (context) {
+          final uc = context.watch<UpdateController>();
+          return AppCard(
+            child: Row(children: [
+              const Icon(Icons.system_update_rounded, color: AppColors.blue),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(uc.currentLabel.isEmpty ? '-' : uc.currentLabel, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(uc.available != null ? 'New build ${uc.available!.build} available' : 'Updates install automatically from the server',
+                      style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                ]),
+              ),
+              uc.checking
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : TextButton(onPressed: () => checkForUpdate(context, manual: true), child: const Text('Check')),
+            ]),
+          );
+        }),
         const Gap(24),
-        const Center(child: Text('${AppConfig.appName} v1.0.0', style: TextStyle(color: AppColors.muted, fontSize: 12))),
+        const Center(child: Text(AppConfig.appName, style: TextStyle(color: AppColors.muted, fontSize: 12))),
         const Center(child: Text(AppConfig.poweredBy, style: TextStyle(color: AppColors.muted, fontSize: 11))),
       ]),
     );

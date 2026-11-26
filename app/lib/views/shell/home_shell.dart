@@ -8,6 +8,7 @@ import '../../controllers/sync_controller.dart';
 import '../../controllers/tracking_controller.dart';
 import '../../models/user.dart';
 import '../widgets/common.dart';
+import '../widgets/update_sheet.dart';
 import 'screen_registry.dart';
 import 'shell_page.dart';
 
@@ -28,6 +29,10 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     currentScreen.value = Scr.dashboard;
+    // check for a new app version shortly after login
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) checkForUpdate(context);
+    });
   }
 
   @override

@@ -47,12 +47,17 @@ jobs:
           echo "code=$?" >> "$GITHUB_OUTPUT"
           cat ../ci-analyze.txt
 
+      - name: Use the permanent signing key (same key every build = in-app updates work)
+        run: |
+          mkdir -p ~/.android
+          cp android-signing/debug.keystore ~/.android/debug.keystore
+
       - name: Build release APK
         id: build
         if: steps.analyze.outputs.code == '0'
         run: |
           set +e
-          flutter build apk --release > ../ci-build.txt 2>&1
+          flutter build apk --release --build-number=${{ github.run_number }} --build-name=1.0.${{ github.run_number }} > ../ci-build.txt 2>&1
           echo "code=$?" >> "$GITHUB_OUTPUT"
           tail -n 200 ../ci-build.txt
 
@@ -76,6 +81,27 @@ jobs:
 
       - name: Rename APK
         run: cp build/app/outputs/flutter-apk/app-release.apk build/ConfectioneryDistribution-${{ github.run_number }}.apk
+
+      - name: Publish to server (phones auto-update)
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          URL=$(grep -oP "defaultApiBaseUrl = '\K[^']+" lib/config/app_config.dart)
+          TOKEN=$(grep -oP "defaultApiToken = '\K[^']+" lib/config/app_config.dart)
+          NOTES=$(printf '%s' "${COMMIT_MSG:-Manual build}" | head -n1 | jq -sRr @uri)
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sS --fail -X POST "$URL/api/app/release" \
+                 -H "Authorization: Bearer $TOKEN" \
+                 -H "Content-Type: application/octet-stream" \
+                 -H "X-Build: ${{ github.run_number }}" \
+                 -H "X-Version: 1.0.${{ github.run_number }}" \
+                 -H "X-Notes: $NOTES" \
+                 --data-binary @build/ConfectioneryDistribution-${{ github.run_number }}.apk; then
+              echo; echo "Uploaded build ${{ github.run_number }}"; exit 0
+            fi
+            echo "Server not ready (try $i), waiting 30s..."; sleep 30
+          done
+          exit 1
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

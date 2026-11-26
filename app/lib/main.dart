@@ -13,6 +13,7 @@ import 'controllers/return_controller.dart';
 import 'controllers/shop_controller.dart';
 import 'controllers/sync_controller.dart';
 import 'controllers/tracking_controller.dart';
+import 'controllers/update_controller.dart';
 import 'controllers/user_controller.dart';
 import 'services/local_db.dart';
 import 'services/number_service.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
   final recovery = RecoveryController(accounts, shops, tracking);
   final reports = ReportController(orders, recovery, returns, inventory, accounts, shops, users);
   final sync = SyncController();
+  final updates = UpdateController();
 
   await accounts.ensureChart();
   // Offline-only install: create admin/1234 right away.
@@ -47,6 +49,7 @@ Future<void> main() async {
   await auth.restoreSession();
   tracking.resume();
   sync.start();
+  updates.start();
 
   runApp(MultiProvider(
     providers: [
@@ -61,6 +64,7 @@ Future<void> main() async {
       ChangeNotifierProvider.value(value: recovery),
       ChangeNotifierProvider.value(value: reports),
       ChangeNotifierProvider.value(value: sync),
+      ChangeNotifierProvider.value(value: updates),
     ],
     child: const DistributionApp(),
   ));
