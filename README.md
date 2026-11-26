@@ -40,3 +40,8 @@ Do this on the owner's phone first, then on every staff phone (users, shops, pro
 | GET | `/api/admin/backups/:id` | download a backup |
 
 All except `/api/health` need `Authorization: Bearer <API_TOKEN>`.
+
+## APK (automatic build)
+Every push to `main` that changes `app/` builds the APK on GitHub Actions.
+Download it from the repo's **Releases** tab (`ConfectioneryDistribution-<n>.apk`) or from **Actions → Build APK → Artifacts**.
+Run it manually: Actions → Build APK → Run workflow.
