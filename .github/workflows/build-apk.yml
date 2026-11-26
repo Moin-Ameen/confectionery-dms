@@ -31,7 +31,9 @@ jobs:
           cache: true
 
       - name: Generate Android project files
-        run: flutter create . --org com.cashlifypos --project-name confectionery_distribution --platforms android
+        run: |
+          flutter create . --org com.cashlifypos --project-name confectionery_distribution --platforms android
+          rm -f test/widget_test.dart
 
       - name: Get packages
         run: flutter pub get 2>&1 | tee ../ci-pubget.txt
