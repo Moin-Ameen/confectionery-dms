@@ -28,6 +28,24 @@ class AuthController extends BaseController {
     await db.put(Col.users, u.toMap());
   }
 
+  bool get hasUsers => db.count(Col.users) > 0;
+  bool booting = false;
+  String bootMessage = '';
+
+  /// New phone with a server: download users before anyone logs in.
+  /// Creates admin/1234 only when the server itself has no users yet (very first setup).
+  Future<void> bootstrap(Future<bool> Function() syncNow) async {
+    if (hasUsers || booting) return;
+    booting = true;
+    bootMessage = 'Connecting to server…';
+    notifyListeners();
+    final ok = await syncNow();
+    if (ok && !hasUsers) await ensureDefaultAdmin();
+    booting = false;
+    bootMessage = hasUsers ? '' : 'Internet nahi mila. Internet on karein aur "Retry" dabayein.';
+    changed();
+  }
+
   bool get isFreshInstall {
     final users = db.all(Col.users);
     return users.length == 1 && users.first['username'] == 'admin';

@@ -41,7 +41,9 @@ Future<void> main() async {
   final sync = SyncController();
 
   await accounts.ensureChart();
-  await auth.ensureDefaultAdmin();
+  // Offline-only install: create admin/1234 right away.
+  // With a server: users come from the server first (see AuthController.bootstrap on the login screen).
+  if (!sync.configured) await auth.ensureDefaultAdmin();
   await auth.restoreSession();
   tracking.resume();
   sync.start();

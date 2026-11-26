@@ -6,9 +6,10 @@ class AppConfig {
   static const String poweredBy = 'Powered by CASHLIFYPOS';
   static const String currency = 'Rs';
 
-  /// Default server URL for online sync. Leave empty to run fully offline.
-  /// Can also be changed at runtime from Settings.
-  static const String defaultApiBaseUrl = '';
+  /// Server for online sync (built into the APK so staff never type it).
+  /// Leave empty to run fully offline. Owner can change it in Settings → Advanced.
+  static const String defaultApiBaseUrl = 'https://confectionery-dms-api.onrender.com';
+  static const String defaultApiToken = 'VdyvbE09iY52eRpIc5A802uUHcY4ZeYRC/w8MYowpu0=';
 
   /// GPS ping interval while a booker / salesman is on duty.
   static const Duration gpsInterval = Duration(minutes: 2);

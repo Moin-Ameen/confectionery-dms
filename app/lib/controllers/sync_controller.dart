@@ -41,12 +41,16 @@ class SyncController extends BaseController {
     notifyListeners();
   }
 
-  Future<void> syncNow() async {
-    if (syncing) return;
+  Future<bool>? _current;
+
+  /// Runs a sync (or joins the one already running). Returns true on success.
+  Future<bool> syncNow() => _current ??= _run().whenComplete(() => _current = null);
+
+  Future<bool> _run() async {
     if (!configured) {
       lastMessage = 'Offline mode – server not configured';
       await refreshPending();
-      return;
+      return false;
     }
     syncing = true;
     notifyListeners();
@@ -56,6 +60,7 @@ class SyncController extends BaseController {
     await refreshPending();
     if (r.pulled > 0) BaseController.notifyAll();
     notifyListeners();
+    return r.ok;
   }
 
   void saveServer(String url, String token) {

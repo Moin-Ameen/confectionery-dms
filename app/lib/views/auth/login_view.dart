@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../config/app_config.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/sync_controller.dart';
 import '../widgets/common.dart';
 
 class LoginView extends StatefulWidget {
@@ -19,13 +20,32 @@ class _LoginViewState extends State<LoginView> {
   bool _hide = true;
   bool _busy = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
+  }
+
+  void _boot() {
+    if (!mounted) return;
+    final sync = context.read<SyncController>();
+    if (!sync.configured) return;
+    context.read<AuthController>().bootstrap(sync.syncNow);
+  }
+
   Future<void> _login() async {
     if (_user.text.trim().isEmpty || _pass.text.isEmpty) {
       showSnack(context, 'Enter username and password', error: true);
       return;
     }
     setState(() => _busy = true);
-    final err = await context.read<AuthController>().login(_user.text, _pass.text);
+    final auth = context.read<AuthController>();
+    final sync = context.read<SyncController>();
+    var err = await auth.login(_user.text, _pass.text);
+    // New user or changed password on another phone → fetch latest users from server and try again.
+    if ((err == 'User not found' || err == 'Wrong password') && sync.configured) {
+      if (await sync.syncNow()) err = await auth.login(_user.text, _pass.text);
+    }
     if (!mounted) return;
     setState(() => _busy = false);
     if (err != null) showSnack(context, err, error: true);
@@ -33,7 +53,7 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.read<AuthController>();
+    final auth = context.watch<AuthController>();
     final h = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: AppColors.navy,
@@ -112,6 +132,27 @@ class _LoginViewState extends State<LoginView> {
                           : const Text('Login'),
                     ),
                   ),
+                  if (auth.booting) ...[
+                    const SizedBox(height: 14),
+                    const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      SizedBox(width: 10),
+                      Text('Setting up this phone…', style: TextStyle(fontSize: 12)),
+                    ]),
+                  ] else if (!auth.hasUsers && auth.bootMessage.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.red.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(children: [
+                        Expanded(child: Text(auth.bootMessage, style: const TextStyle(fontSize: 12))),
+                        TextButton(onPressed: _boot, child: const Text('Retry')),
+                      ]),
+                    ),
+                  ],
                   if (auth.isFreshInstall) ...[
                     const SizedBox(height: 14),
                     Container(

@@ -82,40 +82,41 @@ class _SettingsViewState extends State<SettingsView> {
                 ]),
               ),
             ]),
-            if (canEdit) ...[
-              const Gap(),
-              TextField(controller: _url, decoration: const InputDecoration(labelText: 'Server URL (e.g. https://api.yourdomain.com)')),
-              const Gap(),
-              TextField(controller: _token, decoration: const InputDecoration(labelText: 'API key / token')),
-            ],
             const Gap(),
-            Row(children: [
-              if (canEdit)
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      sync.saveServer(_url.text, _token.text);
-                      showSnack(context, 'Server saved');
-                    },
-                    child: const Text('Save server'),
-                  ),
-                ),
-              if (canEdit) const Gap(),
-              Expanded(
-                child: FilledButton.icon(
-                  icon: sync.syncing
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.sync_rounded),
-                  label: const Text('Sync now'),
-                  onPressed: sync.syncing ? null : () => sync.syncNow(),
-                ),
-              ),
-            ]),
+            FilledButton.icon(
+              icon: sync.syncing
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.sync_rounded),
+              label: const Text('Sync now'),
+              onPressed: sync.syncing ? null : () => sync.syncNow(),
+            ),
             const Gap(8),
             const Text(
-              'The app works fully offline. When a server is set, all changes sync automatically whenever internet is available.',
+              'Data saves on the phone and syncs automatically whenever internet is available.',
               style: TextStyle(fontSize: 11, color: AppColors.muted),
             ),
+            // Server details are built into the app; only the owner can see / change them.
+            if (isOwner)
+              Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title: const Text('Advanced (server)', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                  children: [
+                    TextField(controller: _url, decoration: const InputDecoration(labelText: 'Server URL')),
+                    const Gap(),
+                    TextField(controller: _token, obscureText: true, decoration: const InputDecoration(labelText: 'API token')),
+                    const Gap(),
+                    OutlinedButton(
+                      onPressed: () {
+                        sync.saveServer(_url.text, _token.text);
+                        showSnack(context, 'Server saved');
+                      },
+                      child: const Text('Save server'),
+                    ),
+                  ],
+                ),
+              ),
           ]),
         ),
 

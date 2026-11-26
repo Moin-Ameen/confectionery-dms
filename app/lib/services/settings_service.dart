@@ -34,7 +34,7 @@ class SettingsService {
   String get apiBaseUrl => _p.getString('apiBaseUrl') ?? AppConfig.defaultApiBaseUrl;
   set apiBaseUrl(String v) => _p.setString('apiBaseUrl', v.trim());
 
-  String get apiToken => _p.getString('apiToken') ?? '';
+  String get apiToken => _p.getString('apiToken') ?? AppConfig.defaultApiToken;
   set apiToken(String v) => _p.setString('apiToken', v.trim());
 
   int get lastPull => _p.getInt('lastPull') ?? 0;
