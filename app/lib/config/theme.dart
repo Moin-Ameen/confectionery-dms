@@ -39,7 +39,6 @@ class AppTheme {
       textTheme: GoogleFonts.poppinsTextTheme(base.textTheme),
       pageTransitionsTheme: const PageTransitionsTheme(builders: {
         TargetPlatform.android: ZoomPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       }),
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? const Color(0xFF0B1424) : AppColors.bg,
